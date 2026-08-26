@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================
+   Superávit — sistema visual
+   Verde = saldo positivo. Latão = transbordo, só em detalhe fino.
+   Vinho = acento raro. Neutros = areia quente.
+   ============================================================ */
+
+@theme {
+  --color-green-950: #03110d;
+  --color-green-900: #0a1f19;
+  --color-green-800: #0f2622;
+  --color-green-700: #16302b;
+  --color-green-600: #1f4239;
+  --color-green-500: #2c5a4d;
+  --color-green-300: #7ca392;
+  --color-green-100: #dbe7e1;
+  --color-green-50: #eef4f1;
+
+  --color-gold-600: #7d6444;
+  --color-gold-400: #a38560;
+  --color-gold-200: #d4c3a8;
+  --color-gold-50: #f6f1e8;
+
+  --color-wine-900: #390517;
+  --color-wine-600: #8c1436;
+  --color-wine-100: #f3dee4;
+
+  --color-paper: #f3f1ea;
+  --color-paper-dim: #e8e5db;
+
+  --color-ink: #03110d;
+  --color-ink-soft: #4a5a54;
+  --color-ink-faint: #7d8a85;
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-serif: var(--font-spectral), ui-serif, Georgia, serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-paper);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Números sempre em mono, alinhados em coluna. */
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Rótulo de seção: mono, caixa alta, tracking largo — como no manual. */
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+  line-height: 1;
+}
+
+/* O gradiente do "transbordar": entra verde, sai latão. */
+.flow-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-green-700) 0%,
+    var(--color-green-600) 45%,
+    var(--color-gold-400) 100%
+  );
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+input[type="date"] {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--color-green-700);
+  color: var(--color-paper);
 }

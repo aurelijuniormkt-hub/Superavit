@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Superávit Growth — Painel de Gestão
 
-## Getting Started
+Painel interno de gestão da consultoria: financeiro, comercial, clientes e capacidade de entrega.
 
-First, run the development server:
+## Telas
+
+| Tela | O que faz |
+|---|---|
+| **Visão geral** | Estado atual → projeção → gap até a meta. Alertas do que pode furar o mês. |
+| **Clientes** | Cadastro completo, capacidade de entrega, histórico de pagamentos por cliente e lançamento das vendas do mês para clientes com comissão %. |
+| **Financeiro** | Receita confirmada e pendente, recorrente vs pontual, fluxo de caixa, lançamentos e despesas fixas. Navega por mês. |
+| **CRM** | Kanban de contatos com arrastar e soltar em 5 etapas. Telefone, e-mail, anotações e data do próximo contato em cada card. Quem fecha vira cliente num clique. |
+| **Metas** | Metas com progresso automático, resumo do funil e origem dos contatos. |
+| **Configurações** | Capacidade máxima de clientes e caixa mínimo de segurança. |
+
+## Como colocar para rodar
+
+### 1. Criar o projeto no Supabase (gratuito)
+
+1. Acesse [supabase.com](https://supabase.com), crie uma conta e clique em **New Project**.
+2. Espere o projeto terminar de ser criado (~2 minutos).
+
+### 2. Rodar o script que cria as tabelas
+
+1. No menu lateral, **SQL Editor** → **New query**.
+2. Cole todo o conteúdo de [`supabase/schema.sql`](supabase/schema.sql) e clique em **Run**.
+
+### 3. Criar seu usuário de login
+
+1. **Authentication → Users → Add user → Create new user**.
+2. Preencha e-mail e senha, marque **Auto Confirm User**.
+
+### 4. Conectar o painel ao Supabase
+
+1. **Settings → API**: copie a **Project URL** e a chave **publishable** (`sb_publishable_...`).
+2. Duplique `.env.local.example` como `.env.local` e preencha os dois campos.
+
+### 5. Rodar
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) e entre com o e-mail e senha do passo 3.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Como o painel calcula
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Receita confirmada** — só o que foi marcado como pago no mês.
+- **Projeção** — tudo lançado no mês (confirmado + pendente) mais o funil ponderado pela etapa: qualificação 20%, apresentação de valor 40%, negociação 70%.
+- **Recorrente previsível** — soma das mensalidades fixas de clientes ativos.
+- **Comissões** — calculadas a partir do valor de vendas lançado em Clientes, todo mês.
+- **Metas** — `novos clientes` e `faturamento` se atualizam sozinhas; o tipo `outro` é atualizado manualmente.
+- **Conversão** — ao virar cliente, o contato do CRM fica ligado ao cliente criado (`leads.client_id`) e a data de fechamento passa a contar para a meta do período.
+- **Fluxo de caixa** — entradas previstas menos despesas fixas ativas menos saídas avulsas.
+- **Capacidade** — alerta a partir de 80% do limite definido em Configurações.
 
-## Learn More
+### Cobranças automáticas
 
-To learn more about Next.js, take a look at the following resources:
+Toda vez que uma tela de dinheiro é aberta, `garantirCobrancasDoMes()` ([src/lib/queries.ts](src/lib/queries.ts)) garante que as cobranças recorrentes daquele mês existam como **pendentes** — mensalidade fixa sempre, comissão só depois que o valor de vendas do mês foi lançado. Nunca é gerada cobrança para mês anterior ao início do contrato.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+A função roda em duas etapas e é idempotente: primeiro **varre e apaga duplicatas** (mantendo a primeira de cada cliente + categoria), depois cria o que falta. A varredura é o que torna o conjunto auto-corretivo — se duas telas carregarem ao mesmo tempo e ambas inserirem, a próxima carga limpa. Verificado com 20 requisições simultâneas.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estrutura de dados
 
-## Deploy on Vercel
+Detalhe completo em [`supabase/schema.sql`](supabase/schema.sql).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Tabela | O que guarda |
+|---|---|
+| `clients` | Cadastro: tipo de contrato, recorrência, valor, status, fase, risco de churn |
+| `client_monthly_sales` | Vendas do mês dos clientes com comissão % |
+| `transactions` | Entradas e saídas, confirmadas ou pendentes |
+| `fixed_expenses` | Despesas fixas mensais |
+| `goals` | Metas por período |
+| `leads` | CRM: contatos, etapa do funil, telefone, e-mail, anotações e próximo contato |
+| `settings` | Capacidade máxima e caixa mínimo |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tudo é editável pelo painel — clientes, contatos, metas, lançamentos, despesas fixas e configurações têm cadastro, edição e exclusão na própria tela. Novos tipos de meta e origens de contato são campos de texto livre, sem mudança no banco.
+
+## Identidade visual
+
+Segue o manual de marca da Superávit: verde petróleo `#16302B` (saldo positivo), latão `#A38560` (transbordo, só em detalhe fino), vinho `#390517` (acento raro), paper `#F3F1EA`. Tipografia: Space Grotesk (display), IBM Plex Sans (texto), IBM Plex Mono (todo número), Spectral (propósito). Ícones em traço de 1,75px, só contorno, sem emoji.
+
+## Stack
+
+Next.js 16 (App Router, Server Actions) · Tailwind CSS 4 · Supabase (Postgres + Auth).
