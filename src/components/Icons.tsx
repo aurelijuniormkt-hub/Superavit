@@ -60,12 +60,6 @@ export const IconTarget = (p: IconProps) => (
   </Svg>
 );
 
-export const IconFunnel = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M3.5 4.5h17l-6.5 8v6.2l-4 2.3V12.5l-6.5-8Z" />
-  </Svg>
-);
-
 export const IconSettings = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="12" cy="12" r="3" />

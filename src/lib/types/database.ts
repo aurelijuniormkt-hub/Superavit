@@ -76,28 +76,6 @@ export interface Goal {
   created_at: string;
 }
 
-export type EtapaLead = "qualificacao" | "apresentacao_valor" | "negociacao" | "fechado" | "perdido";
-
-export interface Lead {
-  id: string;
-  nome: string;
-  origem: string | null;
-  produto_interesse: TipoProduto | null;
-  etapa: EtapaLead;
-  valor_estimado: number | null;
-  data_entrada: string;
-  data_fechamento: string | null;
-  client_id: string | null;
-  telefone: string | null;
-  email: string | null;
-  empresa: string | null;
-  notas: string | null;
-  proximo_contato: string | null;
-  /** Posição manual dentro da coluna do kanban. */
-  ordem: number | null;
-  created_at: string;
-}
-
 export interface Settings {
   id: number;
   capacidade_maxima_clientes: number;

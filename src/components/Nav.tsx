@@ -7,13 +7,11 @@ import {
   IconUsers,
   IconWallet,
   IconTarget,
-  IconFunnel,
   IconSettings,
 } from "./Icons";
 
 const ITENS = [
   { href: "/", rotulo: "Visão geral", Icone: IconPanel },
-  { href: "/crm", rotulo: "CRM", Icone: IconFunnel },
   { href: "/clientes", rotulo: "Clientes", Icone: IconUsers },
   { href: "/financeiro", rotulo: "Financeiro", Icone: IconWallet },
   { href: "/metas", rotulo: "Metas", Icone: IconTarget },

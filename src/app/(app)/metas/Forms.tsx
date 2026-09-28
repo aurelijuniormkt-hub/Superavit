@@ -24,21 +24,21 @@ export function FormMeta({ meta }: { meta?: Goal }) {
 
       <Campo
         label="O que medir"
-        dica="Novos clientes e faturamento são contados sozinhos. 'Outro' você atualiza na mão."
+        dica="Faturamento é contado sozinho a partir do financeiro. Os outros dois você atualiza na mão."
       >
         <Select
           name="metrica"
           value={metrica}
           onChange={(e) => setMetrica(e.target.value as typeof metrica)}
         >
-          <option value="novos_clientes">Novos clientes fechados</option>
+          <option value="novos_clientes">Novos clientes (manual)</option>
           <option value="faturamento">Faturamento confirmado (R$)</option>
-          <option value="outro">Outro (eu atualizo manualmente)</option>
+          <option value="outro">Outro (manual)</option>
         </Select>
       </Campo>
 
       {metrica === "novos_clientes" && (
-        <Campo label="Produto que conta para a meta">
+        <Campo label="Produto (opcional)" dica="Só uma etiqueta — não filtra nada sozinho.">
           <Select name="produto_alvo" defaultValue={meta?.produto_alvo ?? "todos"}>
             <option value="todos">Qualquer produto</option>
             <option value="consultoria">Só consultoria</option>
@@ -60,7 +60,7 @@ export function FormMeta({ meta }: { meta?: Goal }) {
           />
         </Campo>
 
-        {metrica === "outro" && (
+        {metrica !== "faturamento" && (
           <Campo label="Onde estou hoje">
             <Input
               name="valor_manual"
@@ -72,7 +72,7 @@ export function FormMeta({ meta }: { meta?: Goal }) {
           </Campo>
         )}
 
-        {metrica !== "outro" && (
+        {metrica === "faturamento" && (
           <Campo label="Tipo de período">
             <Select name="periodo_tipo" defaultValue={meta?.periodo_tipo ?? "mensal"}>
               <option value="mensal">Mensal</option>
@@ -82,7 +82,7 @@ export function FormMeta({ meta }: { meta?: Goal }) {
         )}
       </div>
 
-      {metrica === "outro" && (
+      {metrica !== "faturamento" && (
         <Campo label="Tipo de período">
           <Select name="periodo_tipo" defaultValue={meta?.periodo_tipo ?? "mensal"}>
             <option value="mensal">Mensal</option>

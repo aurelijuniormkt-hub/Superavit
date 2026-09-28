@@ -31,7 +31,8 @@ export async function salvarMeta(
     metrica,
     produto_alvo: txt(fd, "produto_alvo") ?? "todos",
     valor_alvo,
-    valor_manual: metrica === "outro" ? (num(fd, "valor_manual") ?? 0) : null,
+    valor_manual:
+      metrica === "outro" || metrica === "novos_clientes" ? (num(fd, "valor_manual") ?? 0) : null,
   };
 
   const supabase = await createClient();

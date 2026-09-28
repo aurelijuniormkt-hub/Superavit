@@ -115,32 +115,9 @@ export const LABEL_CATEGORIA: Record<string, string> = {
   outro: "Outro",
 };
 
-export const LABEL_ETAPA: Record<string, string> = {
-  qualificacao: "Qualificação",
-  apresentacao_valor: "Apresentação de valor",
-  negociacao: "Negociação",
-  fechado: "Fechado",
-  perdido: "Perdido",
-};
-
-export const ETAPAS_FUNIL = [
-  "qualificacao",
-  "apresentacao_valor",
-  "negociacao",
-  "fechado",
-] as const;
-
 export const LABEL_METRICA: Record<string, string> = {
   novos_clientes: "Novos clientes",
   faturamento: "Faturamento",
   outro: "Outro (manual)",
 };
 
-/** Peso de conversão por etapa — usado só na projeção do pipeline. */
-export const PESO_ETAPA: Record<string, number> = {
-  qualificacao: 0.2,
-  apresentacao_valor: 0.4,
-  negociacao: 0.7,
-  fechado: 1,
-  perdido: 0,
-};

@@ -1,44 +1,24 @@
-import Link from "next/link";
 import { PageHeader, Secao } from "@/components/PageHeader";
 import { Card, CardHead, Badge, Vazio, Progresso } from "@/components/ui";
 import { ModalForm, BotaoAcao } from "@/components/ui/Modal";
-import { IconPlus, IconPencil, IconTrash, IconArrowUp } from "@/components/Icons";
+import { IconPlus, IconPencil, IconTrash } from "@/components/Icons";
 import { FormMeta } from "./Forms";
 import { salvarMeta, excluirMeta } from "./actions";
-import {
-  listarMetas,
-  listarLeads,
-  faturamentoConfirmadoPorMes,
-  progressoDaMeta,
-  funilPorEtapa,
-  origensDosLeads,
-} from "@/lib/queries";
-import {
-  brlCurto,
-  dataBR,
-  hojeISO,
-  pct,
-  LABEL_ETAPA,
-  LABEL_PRODUTO,
-  LABEL_METRICA,
-  ETAPAS_FUNIL,
-} from "@/lib/format";
+import { listarMetas, faturamentoConfirmadoPorMes, progressoDaMeta } from "@/lib/queries";
+import { brlCurto, dataBR, hojeISO, pct, LABEL_PRODUTO, LABEL_METRICA } from "@/lib/format";
 import type { Goal } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
 export default async function MetasPage() {
   const hoje = hojeISO();
-  const [metas, leads, faturamentoPorMes] = await Promise.all([
+  const [metas, faturamentoPorMes] = await Promise.all([
     listarMetas(),
-    listarLeads(),
     faturamentoConfirmadoPorMes(),
   ]);
 
   const vigentes = metas.filter((m) => m.data_inicio <= hoje && m.data_fim >= hoje);
   const outras = metas.filter((m) => !vigentes.includes(m));
-  const funil = funilPorEtapa(leads);
-  const origens = origensDosLeads(leads);
 
   return (
     <>
@@ -49,7 +29,7 @@ export default async function MetasPage() {
         acao={
           <ModalForm
             titulo="Nova meta"
-            descricao="Defina o alvo do período. O progresso é contado sozinho."
+            descricao="Defina o alvo do período. O progresso é contado sozinho quando possível."
             rotuloAbrir="Nova meta"
             iconeAbrir={<IconPlus size={16} />}
             action={salvarMeta}
@@ -70,88 +50,11 @@ export default async function MetasPage() {
           ) : (
             <div className="divide-y divide-paper-dim">
               {vigentes.map((m) => (
-                <LinhaMeta
-                  key={m.id}
-                  meta={m}
-                  atual={progressoDaMeta(m, leads, faturamentoPorMes)}
-                />
+                <LinhaMeta key={m.id} meta={m} atual={progressoDaMeta(m, faturamentoPorMes)} />
               ))}
             </div>
           )}
         </Card>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHead
-              titulo="Funil hoje"
-              nota="Resumo do CRM"
-              acao={
-                <Link
-                  href="/crm"
-                  className="inline-flex items-center gap-1 text-xs text-ink-faint transition-colors hover:text-ink"
-                >
-                  Abrir CRM <IconArrowUp size={13} />
-                </Link>
-              }
-            />
-            {leads.length === 0 ? (
-              <Vazio
-                titulo="Funil vazio"
-                descricao="Cadastre contatos no CRM e o resumo aparece aqui."
-              />
-            ) : (
-              <div className="divide-y divide-paper-dim">
-                {ETAPAS_FUNIL.map((etapa) => {
-                  const info = funil.find((f) => f.etapa === etapa)!;
-                  return (
-                    <div
-                      key={etapa}
-                      className="flex items-center justify-between gap-3 px-5 py-3"
-                    >
-                      <span className="text-[13px] text-ink">
-                        {LABEL_ETAPA[etapa]}
-                      </span>
-                      <span className="flex items-baseline gap-3">
-                        <span className="tabular text-xs text-ink-faint">
-                          {info.valor > 0 ? brlCurto(info.valor) : "—"}
-                        </span>
-                        <span className="tabular w-6 text-right text-[13px] font-medium text-ink">
-                          {info.quantidade}
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-
-          <Card>
-            <CardHead titulo="Origem dos contatos" />
-            {origens.length === 0 ? (
-              <Vazio
-                titulo="Sem dados"
-                descricao="Preencha a origem ao cadastrar um contato no CRM."
-              />
-            ) : (
-              <div className="space-y-3 px-5 py-4">
-                {origens.map((o) => (
-                  <div key={o.origem}>
-                    <div className="flex items-baseline justify-between gap-2">
-                      <span className="truncate text-[13px] text-ink">{o.origem}</span>
-                      <span className="tabular text-xs text-ink-faint">
-                        {o.quantidade}
-                      </span>
-                    </div>
-                    <div className="mt-1.5">
-                      <Progresso valor={o.quantidade} alvo={leads.length} tom="latao" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
 
         {outras.length > 0 && (
           <Card>
@@ -161,7 +64,7 @@ export default async function MetasPage() {
                 <LinhaMeta
                   key={m.id}
                   meta={m}
-                  atual={progressoDaMeta(m, leads, faturamentoPorMes)}
+                  atual={progressoDaMeta(m, faturamentoPorMes)}
                   esmaecida
                 />
               ))}

@@ -1,11 +1,10 @@
 import { createClient } from "./supabase/server";
-import { primeiroDiaDoMes, ultimoDiaDoMes, PESO_ETAPA } from "./format";
+import { primeiroDiaDoMes, ultimoDiaDoMes } from "./format";
 import type {
   Client,
   Transaction,
   FixedExpense,
   Goal,
-  Lead,
   Settings,
   ClientMonthlySale,
 } from "./types/database";
@@ -143,15 +142,6 @@ export async function listarMetas(): Promise<Goal[]> {
   return data ?? [];
 }
 
-export async function listarLeads(): Promise<Lead[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("leads")
-    .select("*")
-    .order("created_at", { ascending: false });
-  return data ?? [];
-}
-
 export async function listarVendasDoMes(mes: string): Promise<ClientMonthlySale[]> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -237,58 +227,14 @@ export function receitaRecorrenteFixa(clientes: Client[]) {
   );
 }
 
-/** Pipeline ponderado pela chance de fechar de cada etapa. */
-export function pipelinePonderado(leads: Lead[]) {
-  return soma(
-    leads
-      .filter((l) => l.etapa !== "perdido" && l.etapa !== "fechado")
-      .map((l) => Number(l.valor_estimado ?? 0) * (PESO_ETAPA[l.etapa] ?? 0))
-  );
-}
-
-export function funilPorEtapa(leads: Lead[]) {
-  const etapas = ["qualificacao", "apresentacao_valor", "negociacao", "fechado"];
-  return etapas.map((etapa) => {
-    const doEtapa = leads.filter((l) => l.etapa === etapa);
-    return {
-      etapa,
-      quantidade: doEtapa.length,
-      valor: soma(doEtapa.map((l) => Number(l.valor_estimado ?? 0))),
-    };
-  });
-}
-
-export function origensDosLeads(leads: Lead[]) {
-  const mapa = new Map<string, number>();
-  for (const l of leads) {
-    const origem = l.origem?.trim() || "Sem origem";
-    mapa.set(origem, (mapa.get(origem) ?? 0) + 1);
-  }
-  return [...mapa.entries()]
-    .map(([origem, quantidade]) => ({ origem, quantidade }))
-    .sort((a, b) => b.quantidade - a.quantidade);
-}
-
 /**
- * Progresso de uma meta. Calculado automaticamente quando a métrica permite;
- * "outro" usa o valor que você digita na mão.
+ * Progresso de uma meta. "Faturamento" é calculado automaticamente a partir
+ * do financeiro; "novos clientes" e "outro" você atualiza na mão.
  */
 export function progressoDaMeta(
   meta: Goal,
-  leads: Lead[],
   faturamentoPorMes: Map<string, number>
 ): number {
-  if (meta.metrica === "novos_clientes") {
-    return leads.filter(
-      (l) =>
-        l.etapa === "fechado" &&
-        l.data_fechamento &&
-        l.data_fechamento >= meta.data_inicio &&
-        l.data_fechamento <= meta.data_fim &&
-        (meta.produto_alvo === "todos" || l.produto_interesse === meta.produto_alvo)
-    ).length;
-  }
-
   if (meta.metrica === "faturamento") {
     // Os meses são sempre "YYYY-MM-01", então basta comparar como texto.
     const primeiroMes = meta.data_inicio.slice(0, 8) + "01";

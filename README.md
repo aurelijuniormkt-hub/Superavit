@@ -9,8 +9,7 @@ Painel interno de gestão da consultoria: financeiro, comercial, clientes e capa
 | **Visão geral** | Estado atual → projeção → gap até a meta. Alertas do que pode furar o mês. |
 | **Clientes** | Cadastro completo, capacidade de entrega, histórico de pagamentos por cliente e lançamento das vendas do mês para clientes com comissão %. |
 | **Financeiro** | Receita confirmada e pendente, recorrente vs pontual, fluxo de caixa, lançamentos e despesas fixas. Navega por mês. |
-| **CRM** | Kanban de contatos com arrastar e soltar em 5 etapas. Telefone, e-mail, anotações e data do próximo contato em cada card. Quem fecha vira cliente num clique. |
-| **Metas** | Metas com progresso automático, resumo do funil e origem dos contatos. |
+| **Metas** | Metas por período. Faturamento se atualiza sozinho a partir do financeiro; novos clientes e outros tipos são atualizados na mão. |
 | **Configurações** | Capacidade máxima de clientes, caixa mínimo de segurança e o token de integração com a Meta. |
 
 ## Como colocar para rodar
@@ -47,11 +46,10 @@ Abra [http://localhost:3000](http://localhost:3000) e entre com o e-mail e senha
 ## Como o painel calcula
 
 - **Receita confirmada** — só o que foi marcado como pago no mês.
-- **Projeção** — tudo lançado no mês (confirmado + pendente) mais o funil ponderado pela etapa: qualificação 20%, apresentação de valor 40%, negociação 70%.
+- **Projeção** — tudo lançado no mês, confirmado mais pendente.
 - **Recorrente previsível** — soma das mensalidades fixas de clientes ativos.
 - **Comissões** — calculadas a partir do valor de vendas lançado em Clientes, todo mês.
-- **Metas** — `novos clientes` e `faturamento` se atualizam sozinhas; o tipo `outro` é atualizado manualmente.
-- **Conversão** — ao virar cliente, o contato do CRM fica ligado ao cliente criado (`leads.client_id`) e a data de fechamento passa a contar para a meta do período.
+- **Metas** — `faturamento` se atualiza sozinho a partir do financeiro confirmado; `novos clientes` e `outro` são atualizados na mão.
 - **Fluxo de caixa** — entradas previstas menos despesas fixas ativas menos saídas avulsas.
 - **Capacidade** — alerta a partir de 80% do limite definido em Configurações.
 
@@ -72,10 +70,9 @@ Detalhe completo em [`supabase/schema.sql`](supabase/schema.sql).
 | `transactions` | Entradas e saídas, confirmadas ou pendentes |
 | `fixed_expenses` | Despesas fixas mensais |
 | `goals` | Metas por período |
-| `leads` | CRM: contatos, etapa do funil, telefone, e-mail, anotações e próximo contato |
 | `settings` | Capacidade máxima e caixa mínimo |
 
-Tudo é editável pelo painel — clientes, contatos, metas, lançamentos, despesas fixas e configurações têm cadastro, edição e exclusão na própria tela. Novos tipos de meta e origens de contato são campos de texto livre, sem mudança no banco.
+Tudo é editável pelo painel — clientes, metas, lançamentos, despesas fixas e configurações têm cadastro, edição e exclusão na própria tela.
 
 ## Integração com a Meta (Facebook/Instagram Ads)
 

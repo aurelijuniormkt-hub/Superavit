@@ -7,12 +7,10 @@ import {
   listarTransacoesDoMes,
   listarDespesasFixas,
   listarMetas,
-  listarLeads,
   obterConfiguracoes,
   faturamentoConfirmadoPorMes,
   resumoFinanceiro,
   receitaRecorrenteFixa,
-  pipelinePonderado,
   progressoDaMeta,
   metasVigentes,
   garantirCobrancasDoMes,
@@ -38,13 +36,12 @@ export default async function DashboardPage() {
   const hoje = hojeISO();
   await garantirCobrancasDoMes(mes);
 
-  const [clientes, transacoes, despesas, metas, leads, config, faturamentoPorMes] =
+  const [clientes, transacoes, despesas, metas, config, faturamentoPorMes] =
     await Promise.all([
       listarClientes(),
       listarTransacoesDoMes(mes),
       listarDespesasFixas(),
       listarMetas(),
-      listarLeads(),
       obterConfiguracoes(),
       faturamentoConfirmadoPorMes(),
     ]);
@@ -52,12 +49,11 @@ export default async function DashboardPage() {
   const r = resumoFinanceiro(transacoes);
   const ativos = clientes.filter((c) => c.status === "ativo");
   const mrrFixo = receitaRecorrenteFixa(clientes);
-  const ponderado = pipelinePonderado(leads);
   const totalFixas = despesas
     .filter((d) => d.ativo)
     .reduce((a, d) => a + Number(d.valor), 0);
 
-  const projecao = r.total + ponderado;
+  const projecao = r.total;
   const saldoProjetado = r.total - totalFixas - r.saidasConfirmadas - r.saidasPendentes;
 
   const vigentes = metasVigentes(metas, hoje);
@@ -102,8 +98,7 @@ export default async function DashboardPage() {
                 {brlCurto(projecao)}
               </p>
               <p className="mt-2.5 text-[13px] leading-relaxed text-ink-soft">
-                Tudo lançado no mês mais o funil ponderado (
-                <span className="tabular">{brlCurto(ponderado)}</span>).
+                Tudo lançado no mês, confirmado e pendente.
               </p>
             </div>
 
@@ -232,7 +227,7 @@ export default async function DashboardPage() {
                   <MetaCompacta
                     key={m.id}
                     meta={m}
-                    atual={progressoDaMeta(m, leads, faturamentoPorMes)}
+                    atual={progressoDaMeta(m, faturamentoPorMes)}
                   />
                 ))}
               </div>
