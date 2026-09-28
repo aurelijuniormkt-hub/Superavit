@@ -21,10 +21,15 @@ create table if not exists clients (
   risco_churn text not null default 'baixo' check (risco_churn in ('baixo', 'medio', 'alto')),
   data_inicio date not null default current_date,
   observacoes text,
+  -- ID da conta de anúncios Meta (Facebook/Instagram) deste cliente, sem o prefixo "act_"
+  meta_ad_account_id text,
   created_at timestamptz not null default now()
 );
 
 comment on table clients is 'Cadastro de clientes ativos, pausados e encerrados';
+
+-- Atenção: "create table if not exists" não altera uma tabela que já existe.
+alter table clients add column if not exists meta_ad_account_id text;
 
 -- ------------------------------------------------------------
 -- 2) VENDAS MENSAIS (apenas clientes com comissão %)
@@ -108,6 +113,16 @@ create table if not exists leads (
   created_at timestamptz not null default now()
 );
 
+-- Atenção: o "create table if not exists" acima não altera uma tabela que
+-- já existe. Todo campo novo precisa também de um "alter table" aqui embaixo,
+-- senão ele fica só no arquivo e nunca chega no banco.
+alter table leads add column if not exists telefone text;
+alter table leads add column if not exists email text;
+alter table leads add column if not exists empresa text;
+alter table leads add column if not exists notas text;
+alter table leads add column if not exists proximo_contato date;
+alter table leads add column if not exists ordem double precision;
+
 create index if not exists idx_leads_etapa on leads (etapa);
 
 -- ------------------------------------------------------------
@@ -117,8 +132,13 @@ create table if not exists settings (
   id int primary key default 1,
   capacidade_maxima_clientes int not null default 10,
   caixa_minimo_seguranca numeric(12,2) not null default 0,
+  -- Token de acesso da Meta (System User Token, permissão ads_read) usado
+  -- para buscar o relatório de performance de cada cliente.
+  meta_access_token text,
   constraint singleton check (id = 1)
 );
+
+alter table settings add column if not exists meta_access_token text;
 
 insert into settings (id, capacidade_maxima_clientes, caixa_minimo_seguranca)
 values (1, 10, 0)
@@ -158,6 +178,25 @@ create policy "authenticated full access" on goals for all
 drop policy if exists "authenticated full access" on leads;
 create policy "authenticated full access" on leads for all
   using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- Formulário da landing page (superavit-landing.html).
+-- O visitante NÃO está logado, então entra como 'anon'.
+-- Esta política deixa o anon APENAS inserir, nunca ler, editar ou apagar.
+-- O with check limita o que ele pode gravar: sempre origem 'landing',
+-- sempre na primeira etapa, sem valor e sem vínculo com cliente.
+drop policy if exists "landing form pode cadastrar lead" on leads;
+create policy "landing form pode cadastrar lead" on leads for insert to anon
+  with check (
+    origem = 'landing'
+    and etapa = 'qualificacao'
+    and client_id is null
+    and valor_estimado is null
+    and data_fechamento is null
+    and char_length(nome) between 2 and 120
+    and char_length(coalesce(telefone, '')) between 8 and 40
+    and char_length(coalesce(empresa, '')) <= 160
+    and char_length(coalesce(notas, '')) <= 500
+  );
 
 drop policy if exists "authenticated full access" on settings;
 create policy "authenticated full access" on settings for all

@@ -20,6 +20,8 @@ export interface Client {
   risco_churn: RiscoChurn;
   data_inicio: string; // date ISO
   observacoes: string | null;
+  /** Conta de anúncios Meta (Facebook/Instagram), sem o prefixo "act_". */
+  meta_ad_account_id: string | null;
   created_at: string;
 }
 
@@ -100,4 +102,6 @@ export interface Settings {
   id: number;
   capacidade_maxima_clientes: number;
   caixa_minimo_seguranca: number;
+  /** System User Token da Meta, com permissão ads_read. */
+  meta_access_token: string | null;
 }

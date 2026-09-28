@@ -11,7 +11,7 @@ Painel interno de gestão da consultoria: financeiro, comercial, clientes e capa
 | **Financeiro** | Receita confirmada e pendente, recorrente vs pontual, fluxo de caixa, lançamentos e despesas fixas. Navega por mês. |
 | **CRM** | Kanban de contatos com arrastar e soltar em 5 etapas. Telefone, e-mail, anotações e data do próximo contato em cada card. Quem fecha vira cliente num clique. |
 | **Metas** | Metas com progresso automático, resumo do funil e origem dos contatos. |
-| **Configurações** | Capacidade máxima de clientes e caixa mínimo de segurança. |
+| **Configurações** | Capacidade máxima de clientes, caixa mínimo de segurança e o token de integração com a Meta. |
 
 ## Como colocar para rodar
 
@@ -76,6 +76,14 @@ Detalhe completo em [`supabase/schema.sql`](supabase/schema.sql).
 | `settings` | Capacidade máxima e caixa mínimo |
 
 Tudo é editável pelo painel — clientes, contatos, metas, lançamentos, despesas fixas e configurações têm cadastro, edição e exclusão na própria tela. Novos tipos de meta e origens de contato são campos de texto livre, sem mudança no banco.
+
+## Integração com a Meta (Facebook/Instagram Ads)
+
+Um único token — gerado uma vez na Business Manager da Superávit, com permissão `ads_read` — dá acesso de leitura aos relatórios de todas as contas de anúncio que a agência administra. Nenhum cliente precisa logar. O passo a passo para gerar o token está na própria tela de Configurações do painel.
+
+Para ativar o relatório de um cliente: cole o token em **Configurações** e o ID da conta de anúncios (visível no topo do Gerenciador de Anúncios daquele cliente) no cadastro do cliente, em **Clientes**. O botão "Ver performance" aparece assim que o cliente tem uma conta vinculada, com investimento, cliques, CTR, CPC, impressões, alcance e os principais resultados (leads, compras, etc.) — por período (hoje, últimos 7/30 dias, este mês, mês passado).
+
+Implementado em [src/lib/meta.ts](src/lib/meta.ts) (chamada à Graph API) e [src/app/(app)/clientes/PainelPerformance.tsx](<src/app/(app)/clientes/PainelPerformance.tsx>) (interface).
 
 ## Identidade visual
 

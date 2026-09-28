@@ -1,8 +1,9 @@
 import { PageHeader, Secao } from "@/components/PageHeader";
 import { Card, CardHead, Badge, Vazio, Th, Td, Progresso } from "@/components/ui";
 import { ModalForm, BotaoAcao, PainelInfo } from "@/components/ui/Modal";
-import { IconPlus, IconPencil, IconTrash, IconAlert, IconClock } from "@/components/Icons";
+import { IconPlus, IconPencil, IconTrash, IconAlert, IconClock, IconChart } from "@/components/Icons";
 import { FormCliente } from "./FormCliente";
+import { PainelPerformance } from "./PainelPerformance";
 import { salvarCliente, excluirCliente, salvarVendasDoMes } from "./actions";
 import {
   listarClientes,
@@ -266,6 +267,16 @@ function LinhaCliente({
       </Td>
       <Td alinha="right">
         <div className="flex items-center justify-end gap-1">
+          {c.meta_ad_account_id && (
+            <PainelInfo
+              titulo={c.nome}
+              descricao="Performance de anúncios (Meta)"
+              rotuloAbrir="Ver performance"
+              iconeAbrir={<IconChart size={15} />}
+            >
+              <PainelPerformance clientId={c.id} />
+            </PainelInfo>
+          )}
           <PainelInfo
             titulo={c.nome}
             descricao="Histórico de pagamentos"

@@ -39,6 +39,24 @@ export function FormConfig({ config }: { config: Settings }) {
         />
       </Campo>
 
+      <div className="border-t border-paper-dim pt-4">
+        <Campo
+          label="Token de acesso da Meta"
+          dica={
+            config.meta_access_token
+              ? "Já configurado. Deixe em branco para manter o atual, ou cole um novo para substituir."
+              : "Cole aqui o token gerado na Business Manager (veja o passo a passo ao lado)."
+          }
+        >
+          <Input
+            name="meta_access_token"
+            type="password"
+            placeholder={config.meta_access_token ? "•••••••••••••••• (mantém o atual)" : "EAAxxxxxxxxxxxx..."}
+            autoComplete="off"
+          />
+        </Campo>
+      </div>
+
       {estado?.erro && (
         <p className="rounded-lg border border-wine-100 bg-wine-100 px-3 py-2 text-xs text-wine-600">
           {estado.erro}

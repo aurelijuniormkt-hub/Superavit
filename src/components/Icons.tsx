@@ -132,6 +132,12 @@ export const IconClock = (p: IconProps) => (
   </Svg>
 );
 
+export const IconChart = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20V10M11 20V4M18 20v-7" />
+  </Svg>
+);
+
 export const IconChevronLeft = (p: IconProps) => (
   <Svg {...p}>
     <path d="M14.5 5 8 12l6.5 7" />

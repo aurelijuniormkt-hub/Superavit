@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { txt, num, type EstadoAcao } from "@/lib/form";
 import { garantirCobrancasDoMes } from "@/lib/queries";
+import { buscarInsightsCliente, type PeriodoMeta, type ResultadoMeta } from "@/lib/meta";
 
 function revalidarTudo() {
   revalidatePath("/", "layout");
@@ -41,6 +42,7 @@ export async function salvarCliente(
     risco_churn: txt(fd, "risco_churn") ?? "baixo",
     data_inicio: txt(fd, "data_inicio") ?? new Date().toISOString().slice(0, 10),
     observacoes: txt(fd, "observacoes"),
+    meta_ad_account_id: txt(fd, "meta_ad_account_id")?.replace(/^act_/, "") ?? null,
   };
 
   const supabase = await createClient();
@@ -102,4 +104,32 @@ export async function salvarVendasDoMes(
 
   revalidarTudo();
   return { ok: true };
+}
+
+/** Busca o relatório de performance de um cliente na Meta Ads. */
+export async function buscarPerformanceMeta(
+  clientId: string,
+  periodo: PeriodoMeta
+): Promise<ResultadoMeta> {
+  const supabase = await createClient();
+
+  const [{ data: cliente }, { data: config }] = await Promise.all([
+    supabase.from("clients").select("meta_ad_account_id").eq("id", clientId).single(),
+    supabase.from("settings").select("meta_access_token").eq("id", 1).single(),
+  ]);
+
+  if (!cliente?.meta_ad_account_id) {
+    return {
+      ok: false,
+      erro: "Este cliente ainda não tem uma conta de anúncios Meta cadastrada.",
+    };
+  }
+  if (!config?.meta_access_token) {
+    return {
+      ok: false,
+      erro: "Nenhum token da Meta configurado ainda. Configure em Configurações.",
+    };
+  }
+
+  return buscarInsightsCliente(cliente.meta_ad_account_id, config.meta_access_token, periodo);
 }

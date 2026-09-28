@@ -123,6 +123,17 @@ export function FormCliente({ cliente }: { cliente?: Client }) {
       <Campo label="Observações">
         <TextArea name="observacoes" defaultValue={cliente?.observacoes ?? ""} />
       </Campo>
+
+      <Campo
+        label="Conta de anúncios Meta (opcional)"
+        dica='O número que aparece no Gerenciador de Anúncios, com ou sem o "act_" na frente.'
+      >
+        <Input
+          name="meta_ad_account_id"
+          defaultValue={cliente?.meta_ad_account_id ?? ""}
+          placeholder="123456789012345"
+        />
+      </Campo>
     </>
   );
 }
